@@ -1,76 +1,17 @@
-setwd("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4")
-rver <- getRversion()
-libdir <- paste0("/home/mm5jy/R/", rver)
-if (!dir.exists(libdir)){
-  dir.create(libdir)
-}else{
-  print("dir exists")
-}
-.libPaths(libdir)
-
 library(tidyverse)
 suppressMessages(library(ggpubr))
 library(ggpubr)
 library(rstatix)
 library(tidyr)
 library(ggprism)
-theme_mm <- function() {
-  font <- "Georgia"   #assign font family up front
-  
-  theme_bw() %+replace%    #replace elements we want to change
-    theme(
-      panel.background = element_rect(fill = "white",
-                                      colour = NA),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      text = element_text(size = 8),
-      plot.title = element_text(size = 8, margin = margin(rep(2,4))),
-      axis.line = element_blank(),
-      legend.key = element_blank(),
-      panel.border = element_rect(
-        colour = "black",
-        fill = NA,
-        size = 0.5
-      ),
-      strip.background = element_rect(fill = "white"),
-      complete = TRUE,
-      axis.title.x = element_blank(),
-      
-      legend.position="right"
-    )
-}
 
-theme_mm_lines  <- function() {
-  font <- "Georgia"   #assign font family up front
-  
-  theme_bw() %+replace%    #replace elements we want to change
-    theme(
-      panel.background = element_rect(fill = "white",
-                                      colour = NA),
-      panel.grid = element_line(colour = "grey95"),
-      text = element_text(size = 8),
-      plot.title = element_text(size = 8, margin = margin(rep(2,4))),
-      axis.line = element_blank(),
-      legend.key = element_blank(),
-      panel.border = element_rect(
-        colour = "black",
-        fill = NA,
-        size = 0.5
-      ),
-      complete = TRUE,
-      axis.title.x = element_blank(),
-      strip.background = element_rect(fill = "white",
-                                      colour = "grey20"), 
-      legend.position="right"
-    )
-}
 
 safe_colorblind_palette <- c("#88CCEE",  "#DDCC77", "#CC6677","#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", 
                              "#E0E678", "#E3B476",  "#FFED61", "#8B8BD9", "#C1F5ED",  "#E6C3F7",
                              "#BF1515")
-files_light <- list.files('old_R/', pattern = '*light*.csv')
-files_heavy <- list.files('old_R/', pattern = '*heavy*.csv')
+# files_light <- list.files('old_R/', pattern = '*light*.csv')
+# files_heavy <- list.files('old_R/', pattern = '*heavy*.csv')
 
 CompareGroups <- function(dat,col,metric, titile){
   
@@ -120,7 +61,7 @@ rownames(samples) <- samples$library
 #   }
 #   return(mat)
 # }
-setwd("old_R/")
+#setwd("old_R/")
 # bcr.light <- merge_process(filelist.samples.light, sep = ',')
 # bcr.heavy  <- merge_process(filelist.samples.heavy, sep = ',') 
 # 
@@ -136,11 +77,11 @@ setwd("old_R/")
 # }else{
 #   print("dir exists")
 # }
-bcr.heavy <- read_csv("bcr_heavy.csv")
+bcr.heavy <- read_csv("bcr_heavy.csv.gz")
 
 bcr.heavy$condition <- factor(bcr.heavy$condition, levels = c("WT", "KO"))
 bcr.heavy <- bcr.heavy %>% mutate(cell_type = recode_factor(cell_type, "B1a" = "B-1a","B1b"= "B-1b"))
-write_csv(bcr.heavy, "../bcr_heavy.csv")
+#write_csv(bcr.heavy, "../bcr_heavy.csv")
 
 
 ############################# V #############################
@@ -425,7 +366,7 @@ write_csv(bcr.heavy, "heavy_chain.csv")
 ############## ############## ############## ############## ############## ############## ############## ############## 
 
 cdr3 <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, CDR3aa) %>%
-  summarize(freq = sum(frequency)) %>%
+  summarize(freq = s                um(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- cdr3 %>% complete(nesting(smp, condition, cell_type), CDR3aa) %>% replace(is.na(.), 0)
 B1a_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -748,7 +689,8 @@ ggsave(plot = B1b_J, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnase
 
 
 ###########
-########### V presence in replicated sequences
+################################ V presence in replicated sequences
+##########################
 colo <- c('#4363d8', '#f58231','#e6194b', '#3cb44b', '#ffe119',  '#911eb4',
           '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
           '#9a6324', '#fffac8', '#800000', '#aaffc3',
