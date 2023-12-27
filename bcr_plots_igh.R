@@ -366,7 +366,7 @@ write_csv(bcr.heavy, "heavy_chain.csv")
 ############## ############## ############## ############## ############## ############## ############## ############## 
 
 cdr3 <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, CDR3aa) %>%
-  summarize(freq = s                um(frequency)) %>%
+  summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- cdr3 %>% complete(nesting(smp, condition, cell_type), CDR3aa) %>% replace(is.na(.), 0)
 B1a_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>% 
