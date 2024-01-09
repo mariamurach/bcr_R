@@ -106,7 +106,7 @@ CDR3_props <- CDR3_props %>%  group_by(condition, CDR3_full) %>%
 
 cd1 <- CDR3_props %>% filter(condition == "WT") %>% 
   ggplot(aes(x = "", y=c,fill = reorder(CDR3_full, -c))) +
-  geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1a WT)") +
+  geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1b WT)") +
   coord_polar("y", start=0) + 
   scale_fill_manual(values = colo) +
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
@@ -115,7 +115,7 @@ cd1 <- CDR3_props %>% filter(condition == "WT") %>%
 ggsave(plot = cd1, filename = file_save("piechart_B1b_WT_cdr3_VJ.tiff"), dpi = 300, w = 7, h = 4.5)
 
 cd2 <- CDR3_props %>% filter(condition == "KO") %>% ggplot(aes(x = "", y=c, fill = reorder(CDR3_full, -c))) +
-  geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1a KO)")+
+  geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1b KO)")+
   coord_polar("y", start=0) +
   scale_fill_manual(values = colo) +
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
