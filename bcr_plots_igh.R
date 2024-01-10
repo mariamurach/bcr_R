@@ -39,7 +39,7 @@ file_save <- function(.fname){
   filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", .fname)
   return(filename)
 }
-samples <- read_csv("../samples.csv")
+samples <- read_csv("samples.csv")
 rownames(samples) <- samples$library
 # filelist.samples.light <- sapply(rownames(samples), function(x) grep(paste0("\\b",x,"_"), files_light, value = TRUE))
 # filelist.samples.heavy <- sapply(rownames(samples), function(x) grep(paste0("\\b",x,"_"), files_heavy, value = TRUE))
@@ -67,7 +67,7 @@ rownames(samples) <- samples$library
 # 
 # bcr.heavy$condition <- factor(bcr.heavy$condition, levels = c("WT", "KO"))
 # v <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-#   summarize(freq = sum(frequency)) %>%
+#   dplyr::summarize(freq = sum(frequency)) %>%
 #   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 # tmp1 <- v %>% complete(nesting(smp, condition, cell_type), V) %>% replace(is.na(.), 0)
 # 
@@ -88,7 +88,7 @@ bcr.heavy <- bcr.heavy %>% mutate(cell_type = recode_factor(cell_type, "B1a" = "
 #############################################################
 
 v <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- v %>% complete(nesting(smp, condition, cell_type), V) %>% replace(is.na(.), 0)
 B1a_p_val <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -98,7 +98,7 @@ B1a_p_val <- tmp1 %>% filter(cell_type == "B1a") %>%
 
 sigs <- B1a_p_val %>% filter(Wilcox < 0.05) %>% pull(V)
 v_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, V) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   unique %>% slice(1:15) %>%  pull(V)
 B1a_V <- tmp1 %>% filter(cell_type == "B1a", V %in% v_in_B1a) %>% ggplot(aes(x = fct_reorder(V, desc(freq)), y = freq, fill = condition )) +
   geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
@@ -123,7 +123,7 @@ B1b_p_val <- tmp1 %>% filter(cell_type == "B1b") %>%
 
 sigs <- B1b_p_val %>% filter(Wilcox < 0.05) %>% pull(V)
 v_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, V) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(V) %>%
   unique %>% slice(1:15) %>%  pull(V)
 B1b_V <- tmp1 %>% filter(cell_type == "B1b", V %in% v_in_B1b) %>% ggplot(aes(x = fct_reorder(V, desc(freq)), y = freq, fill = condition )) +
@@ -145,7 +145,7 @@ ggsave(plot = B1b_V, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnase
 
 
 D <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- D %>% complete(nesting(smp, condition, cell_type), D) %>% replace(is.na(.), 0)
 
@@ -157,7 +157,7 @@ B1a_p_val_d <- tmp1 %>% filter(cell_type == "B1a") %>%
 
 sigs <- B1a_p_val_d %>% filter(Wilcox < 0.05) %>% pull(D)
 d_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, D) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(D) %>%
   unique %>% slice(1:15) %>%  pull(D)
 B1a_D <- tmp1 %>% filter(cell_type == "B1a", D %in% d_in_B1a) %>% ggplot(aes(x = fct_reorder(D, desc(freq)), y = freq, fill = condition )) +
@@ -175,7 +175,7 @@ ggsave(plot = B1a_D, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnase
        height = 3.3, width = 6.6, unit = "in", dpi =300)
 
 D <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- D %>% complete(nesting(smp, condition, cell_type), D) %>% replace(is.na(.), 0)
 
@@ -185,7 +185,7 @@ B1b_p_val_d <- tmp1 %>% filter(cell_type == "B1b") %>%
   summarise(D, Wilcox = w$p.value)
 sigs <- B1b_p_val_d %>% filter(Wilcox < 0.05) %>% pull(D)
 d_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, D) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(D) %>%
   unique %>% slice(1:15) %>%  pull(D)
 B1b_D <- tmp1 %>% filter(cell_type == "B1b", D %in% d_in_B1b) %>% ggplot(aes(x = fct_reorder(D, desc(freq)), y = freq, fill = condition )) +
@@ -208,7 +208,7 @@ ggsave(plot = B1b_D, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnase
 
 
 J <- bcr.heavy %>% filter(J != ".") %>% dplyr::group_by(sample, condition, cell_type, J) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- J %>% complete(nesting(smp, condition, cell_type), J) %>% replace(is.na(.), 0)
 B1a_p_val_J <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -217,7 +217,7 @@ B1a_p_val_J <- tmp1 %>% filter(cell_type == "B1a") %>%
   summarise(J, Wilcox = w$p.value)
 sigs <- B1a_p_val_J %>% filter(Wilcox < 0.05) %>% pull(J)
 J_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, J) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(J) %>%
   unique %>% slice(1:15) %>%  pull(J)
 B1a_J <- tmp1 %>% filter(cell_type == "B1a", J %in% J_in_B1a) %>% ggplot(aes(x = fct_reorder(J, desc(freq)), y = freq, fill = condition )) +
@@ -240,7 +240,7 @@ B1b_p_val_J <- tmp1 %>% filter(cell_type == "B1b") %>%
   summarise(J, Wilcox = w$p.value)
 sigs <- B1b_p_val_J %>% filter(Wilcox < 0.05) %>% pull(J)
 J_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, J) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(J) %>%
   unique %>% slice(1:15) %>%  pull(J)
 B1b_J <- tmp1 %>% filter(cell_type == "B1b", J %in% J_in_B1b) %>% ggplot(aes(x = fct_reorder(J, desc(freq)), y = freq, fill = condition )) +
@@ -347,13 +347,13 @@ pl <- ggarrange(B1a_gc, B1b_gc,  nrow = 1, common.legend = TRUE, legend = "botto
 pl
 ggsave(plot = pl, file = file_save("unique_CDR3.jpg"),h = 1.8, w = 3.8, dpi = 300)
 .V <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 .D <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 .J <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, J) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 write_csv(.V, "V.csv")
 write_csv(.D, "D.csv")
@@ -366,7 +366,7 @@ write_csv(bcr.heavy, "heavy_chain.csv")
 ############## ############## ############## ############## ############## ############## ############## ############## 
 
 cdr3 <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, CDR3aa) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- cdr3 %>% complete(nesting(smp, condition, cell_type), CDR3aa) %>% replace(is.na(.), 0)
 B1a_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -375,7 +375,7 @@ B1a_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>%
   summarise(CDR3aa, Wilcox = w$p.value)
 sigs <- B1a_p_val_cdr3 %>% filter(Wilcox < 0.05, CDR3aa != "out_of_frame") %>% pull(CDR3aa)
 cdr3_in_B1a <- tmp1 %>% filter(cell_type == "B1a", CDR3aa != "out_of_frame") %>% group_by(condition, CDR3aa) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(CDR3aa) %>%
   unique %>% slice(1:25) %>%  pull(CDR3aa)
 tmp1 %>% filter(cell_type == "B1a", CDR3aa != "out_of_frame") %>% 
@@ -404,7 +404,7 @@ ggsave(plot = B1a_CDR3aa,
        height = 5.84, width = 6.84, unit = "in", dpi =300)
 
 cdr3 <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, CDR3aa) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- cdr3 %>% complete(nesting(smp, condition, cell_type), CDR3aa) %>% replace(is.na(.), 0)
 B1b_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1b") %>% 
@@ -413,7 +413,7 @@ B1b_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1b") %>%
   summarise(CDR3aa, Wilcox = w$p.value)
 sigs <- B1b_p_val_cdr3 %>% filter(Wilcox < 0.05, CDR3aa != "out_of_frame") %>% pull(CDR3aa)
 cdr3_in_B1b <- tmp1 %>% filter(cell_type == "B1b", CDR3aa != "out_of_frame") %>% group_by(condition, CDR3aa) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(CDR3aa) %>%
   unique %>% slice(1:25) %>%  pull(CDR3aa)
 tmp1 %>% filter(cell_type == "B1b", CDR3aa != "out_of_frame") %>% 
@@ -493,7 +493,7 @@ ggsave(file_save("CDR3aa_B1b.png"), plot = plot,  height = 4.5, width = 8, unit 
 ############## ############## ############## ############## ############## ############## ############## ############## ############## 
 igms <- bcr.heavy %>% filter(cell_type == "B1a", Class == "IGHM")
 igms <- igms %>% dplyr::group_by(sample, condition, cell_type, CDR3aa) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- igms %>% complete(nesting(smp, condition, cell_type), CDR3aa) %>% replace(is.na(.), 0)
 igms_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -502,7 +502,7 @@ igms_p_val_cdr3 <- tmp1 %>% filter(cell_type == "B1a") %>%
   summarise(CDR3aa, Wilcox = w$p.value)
 sigs <- igms_p_val_cdr3 %>% filter(Wilcox < 0.05, CDR3aa != "out_of_frame") %>% pull(CDR3aa)
 igms_in_B1b <- tmp1 %>% filter(cell_type == "B1a", CDR3aa != "out_of_frame") %>% group_by(condition, CDR3aa) %>% 
-  summarize(avg_freq = mean(freq)) %>% ungroup %>% 
+  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
   arrange(desc(avg_freq)) %>% select(CDR3aa) %>%
   unique %>% slice(1:25) %>%  pull(CDR3aa)
 tmp1 %>% filter(cell_type == "B1a", CDR3aa != "out_of_frame") %>% 
@@ -532,7 +532,7 @@ all_V$V <- gsub("\\-.*", "", bcr.heavy$V)
 all_V$V <- gsub("S.*", "", all_V$V)
 all_V$V <- gsub("IGHV", "VH", all_V$V)
 v <- all_V %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 v$V <- factor(v$V, levels = c("VH1", "VH2", "VH3", "VH4", "VH5", "VH6", "VH7", "VH8", "VH9", "VH10", "VH11", "VH12", "VH13", "VH14", "VH15", "VH16"))
 tmp1 <- v %>% complete(nesting(smp, condition, cell_type), V) %>% replace(is.na(.), 0)
@@ -562,7 +562,7 @@ all_V$V <- gsub("\\-.*", "", bcr.heavy$V)
 all_V$V <- gsub("S.*", "", all_V$V)
 all_V$V <- gsub("IGHV", "VH", all_V$V)
 v <- all_V %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 v$V <- factor(v$V, levels = c("VH1", "VH2", "VH3", "VH4", "VH5", "VH6", "VH7", "VH8", "VH9", "VH10", "VH11", "VH12", "VH13", "VH14", "VH15", "VH16"))
 tmp1 <- v %>% complete(nesting(smp, condition, cell_type), V) %>% replace(is.na(.), 0)
@@ -592,7 +592,7 @@ all_D <- bcr.heavy
 all_D$D <- gsub("\\-.*", "", bcr.heavy$D)
 all_D$D <- gsub("IGHD", "DH", all_D$D)
 D <- all_D %>% filter(D != ".") %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- D %>% complete(nesting(smp, condition, cell_type), D) %>% replace(is.na(.), 0)
 B1a_p_val <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -641,7 +641,7 @@ all_J <- bcr.heavy
 all_J$J <- gsub("\\*.*", "", bcr.heavy$J)
 all_J$J <- gsub("IGHJ", "JH", all_J$J)
 J <- all_J %>% filter(J != ".") %>% dplyr::group_by(sample, condition, cell_type, J) %>%
-  summarize(freq = sum(frequency)) %>%
+  dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
 tmp1 <- J %>% complete(nesting(smp, condition, cell_type), J) %>% replace(is.na(.), 0)
 B1a_p_val <- tmp1 %>% filter(cell_type == "B1a") %>% 
@@ -706,7 +706,7 @@ CDR3aa <- bcr.heavy.v %>% filter(cell_type == "B-1a") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3)
 
 CDR3aa.V <- bcr.heavy.v %>% filter(cell_type == "B-1a") %>%
@@ -715,7 +715,7 @@ CDR3aa.V <- bcr.heavy.v %>% filter(cell_type == "B-1a") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa, V)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3) %>% ungroup
   
 
@@ -724,8 +724,8 @@ table(CDR3_props$condition, CDR3_props$f_CDR3 > 0.01)
 seq_clones_WT <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition == "WT",])$f_CDR3)
 seq_clones_KO <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition == "KO",])$f_CDR3)
 CDR3_props$CDR3 <- ifelse(CDR3_props$f_CDR3 > 0.01, CDR3_props$CDR3aa, "not replicated")
-CDR3_props <- CDR3_props %>%  group_by(condition, CDR3) %>%  summarize(f = sum(f_CDR3), c = sum(c_CDR3))
-
+CDR3_props <- CDR3_props %>%  group_by(condition, CDR3) %>%  dplyr::summarize(f = sum(f_CDR3), c = sum(c_CDR3))
+write_csv(CDR3_props, "B-1a_repeated.csv")
 
 
 cd1 <- CDR3_props %>% filter(condition == "WT") %>% ggplot(aes(x = "", y=c,fill = reorder(CDR3, -c))) +
@@ -759,13 +759,13 @@ cond2 <- rep(c_test$rep ,c_test$c)
 cond <- tibble(condition = cond1, rep = cond2)
 table(cond$condition, cond$rep)
 rep_test <-CDR3_props  %>% group_by(condition) %>% mutate(total = n()) %>% ungroup %>% 
-  group_by(condition, rep, total) %>%  summarize(n = n()) %>% mutate(perc = n/total)
+  group_by(condition, rep, total) %>%  dplyr::summarize(n = n()) %>% mutate(perc = n/total)
 
 for(sf in seq(1, 10000000, 100)){
   rep_test_all <-CDR3_props  %>% group_by(condition) %>% mutate(scaling = sum(c_CDR3)/sf) %>% 
     mutate(norm_counts = c_CDR3/scaling) %>% ungroup %>% 
     group_by(condition, rep) %>%
-    summarize(n = round(sum(norm_counts))) %>% unique
+    dplyr::summarize(n = round(sum(norm_counts))) %>% unique
   test <- matrix(c(rep_test_all$n[1],rep_test_all$n[3],rep_test_all$n[2], rep_test_all$n[4]), nrow = 2)
   resu <- chisq.test(test)
   res <- tibble(scaling_factor = sf, "-log10(p.value)" = -log10(resu$p.value))
@@ -791,7 +791,7 @@ foreach(sf = seq(1, 100000000, 5000)) %dopar% {
   rep_test_all <-CDR3_props  %>% group_by(condition) %>% mutate(scaling = sum(c_CDR3)/sf) %>% 
     mutate(norm_counts = c_CDR3/scaling) %>% ungroup %>% 
     group_by(condition, rep) %>%
-    summarize(n = round(sum(norm_counts))) %>% unique
+    dplyr::summarize(n = round(sum(norm_counts))) %>% unique
   test <- matrix(c(rep_test_all$n[1],rep_test_all$n[3],rep_test_all$n[2], rep_test_all$n[4]), nrow = 2)
   resu <- chisq.test(test)
   res <- tibble(scaling_factor = sf, "-log10(p.value)" = -log10(resu$p.value))
@@ -809,7 +809,7 @@ CDR3aa <- bcr.heavy.v %>% filter(cell_type == "B-1b") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3)
 
 CDR3aa.V <- bcr.heavy.v %>% filter(cell_type == "B-1b") %>%
@@ -818,7 +818,7 @@ CDR3aa.V <- bcr.heavy.v %>% filter(cell_type == "B-1b") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa, V)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3) %>% ungroup
 
 
@@ -827,7 +827,8 @@ table(CDR3_props$condition, CDR3_props$f_CDR3 > 0.01)
 seq_clones_WT <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition == "WT",])$f_CDR3)
 seq_clones_KO <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition == "KO",])$f_CDR3)
 CDR3_props$CDR3 <- ifelse(CDR3_props$f_CDR3 > 0.01, CDR3_props$CDR3aa, "not replicated")
-CDR3_props <- CDR3_props %>%  group_by(condition, CDR3) %>%  summarize(f = sum(f_CDR3), c = sum(c_CDR3))
+CDR3_props <- CDR3_props %>%  group_by(condition, CDR3) %>%  dplyr::summarize(f = sum(f_CDR3), c = sum(c_CDR3))
+write_csv(CDR3_props, "B-1b_repeated.csv")
 
 
 
@@ -864,12 +865,12 @@ cond2 <- rep(c_test$rep ,c_test$c)
 cond <- tibble(condition = cond1, rep = cond2)
 table(cond$condition, cond$rep)
 rep_test <-CDR3_props  %>% group_by(condition) %>% mutate(total = n()) %>% ungroup %>% 
-  group_by(condition, rep, total) %>%  summarize(n = n()) %>% mutate(perc = n/total)
+  group_by(condition, rep, total) %>%  dplyr::summarize(n = n()) %>% mutate(perc = n/total)
 sf = 1000000
 rep_test_all <-CDR3_props  %>% group_by(condition) %>% mutate(scaling = sum(c_CDR3)/sf) %>% 
   mutate(norm_counts = c_CDR3/scaling) %>% ungroup %>% 
   group_by(condition, rep) %>%
-  summarize(n = round(sum(norm_counts))) %>% unique
+  dplyr::summarize(n = round(sum(norm_counts))) %>% unique
 
 
 fisher.test( table(CDR3_props$condition, CDR3_props$rep))
@@ -886,7 +887,7 @@ sf_determin <- function(sf = 1){
   rep_test_all <-CDR3_props  %>% group_by(condition) %>% mutate(scaling = sum(c_CDR3)/sf) %>% 
     mutate(norm_counts = c_CDR3/scaling) %>% ungroup %>% 
     group_by(condition, rep) %>%
-    summarize(n = round(sum(norm_counts))) %>% unique
+    dplyr::summarize(n = round(sum(norm_counts))) %>% unique
   test <- matrix(c(rep_test_all$n[1],rep_test_all$n[3],rep_test_all$n[2], rep_test_all$n[4]), nrow = 2)
   resu <- chisq.test(test)
   res <- c(scaling_factor = sf, "-log10(p.value)" = -log10(resu$p.value))
@@ -914,7 +915,7 @@ for(sf in seq(1, 10000000, 500)){
   rep_test_all <-CDR3_props  %>% group_by(condition) %>% mutate(scaling = sum(c_CDR3)/sf) %>% 
     mutate(norm_counts = c_CDR3/scaling) %>% ungroup %>% 
     group_by(condition, rep) %>%
-    summarize(n = round(sum(norm_counts))) %>% unique
+    dplyr::summarize(n = round(sum(norm_counts))) %>% unique
   test <- matrix(c(rep_test_all$n[1],rep_test_all$n[3],rep_test_all$n[2], rep_test_all$n[4]), nrow = 2)
   resu <- chisq.test(test)
   res <- tibble(scaling_factor = sf, "-log10(p.value)" = -log10(resu$p.value))

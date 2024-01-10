@@ -5,7 +5,7 @@ library(rstatix)
 library(tidyr)
 library(ggprism)
 
-source("~/universal.R")
+source("universal.R")
 
 samples <- read_csv("samples.csv")
 bcr.heavy <- read_csv("bcr_heavy.csv.gz")
@@ -30,7 +30,7 @@ get_vdj_plot <- function(cell.type, chain)
     mutate(seq_n = sum(count)) %>%
     ungroup %>% 
     group_by(cell_type, condition, vdj_gene = get(chain))  %>% 
-    summarize(chain_count = sum(count), chain_freq = sum(count)/seq_n ) %>%
+    dplyr::summarize(chain_count = sum(count), chain_freq = sum(count)/seq_n ) %>%
     ungroup %>% distinct %>% arrange(-chain_freq) %>% ungroup %>% drop_na()
   
   genes %>%  ggplot(aes(x = vdj_gene, y = chain_freq, fill = condition )) +
