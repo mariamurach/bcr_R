@@ -49,8 +49,8 @@ ggsave("./plots/light_B-1a_V.pdf", h = 3, w = 9, dpi = 300)
 ggsave("./plots/light_B-1a_V.png", h = 3, w = 9, dpi = 300)
 
 get_vdj_plot("B-1a", "J")
-ggsave("./plots/light_B-1a_J.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/light_B-1a_J.pdf", h = 3, w = 3, dpi = 300)
+ggsave("./plots/light_B-1a_J.png", h = 3, w = 4, dpi = 300)
+ggsave("./plots/light_B-1a_J.pdf", h = 3, w = 4, dpi = 300)
 
 
 get_vdj_plot("B-1b", "V")
@@ -58,7 +58,7 @@ ggsave("./plots/light_B-1b_V.pdf", h = 3, w = 9, dpi = 300)
 ggsave("./plots/light_B-1b_V.png", h = 3, w = 9, dpi = 300)
 
 get_vdj_plot("B-1b", "J")
-ggsave("./plots/light_B-1b_J.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/light_B-1b_J.pdf", h = 3, w = 3, dpi = 300)
+ggsave("./plots/light_B-1b_J.png", h = 3, w = 4, dpi = 300)
+ggsave("./plots/light_B-1b_J.pdf", h = 3, w = 4, dpi = 300)
 
 
