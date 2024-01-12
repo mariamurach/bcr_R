@@ -58,7 +58,7 @@ entropy_all <- entropy_all %>% aggregate(entropies ~ condition, sum)
 entropy_all$condition <- factor(entropy_all$condition, levels = c("WT", "KO"))
 entropy_all %>% ggplot(aes(x = condition, y = entropies, fill = condition)) + 
   geom_bar(position = "dodge", stat = "identity") + theme_prism() + 
-  scale_fill_manual(values = colo) + ggtitle("B-1a")
+  scale_fill_manual(values = colo) + ggtitle("B-1a") + ylab("Shannon Entropy")
 ggsave("plots/B-1a_entropy.png", w = 3.3, h = 2.5)
 
 
@@ -108,6 +108,6 @@ entropy_all <- entropy_all %>% aggregate(entropies ~ condition, sum)
 entropy_all$condition <- factor(entropy_all$condition, levels = c("WT", "KO"))
 entropy_all %>% ggplot(aes(x = condition, y = entropies, fill = condition)) + 
   geom_bar(position = "dodge", stat = "identity") + theme_prism() + 
-  scale_fill_manual(values = colo) + ggtitle("B-1b")
+  scale_fill_manual(values = colo) + ggtitle("B-1b") + ylab("Shannon Entropy")
 ggsave("plots/B-1b_entropy.png",  w = 3.3, h = 2.5 )
 
