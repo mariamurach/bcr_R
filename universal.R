@@ -66,3 +66,29 @@ vivid_colors <- c('#4363d8', '#f58231','#e6194b', '#3cb44b', '#ffe119',  '#911eb
           '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
           '#9a6324', '#fffac8', '#800000', '#aaffc3',
           '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000')
+
+
+pool_CDR3_nt <- function(dat, cell.type){
+  CDR3aa <- dat %>% filter(cell_type == cell.type) %>%
+    select(cell_type, condition,CDR3aa, CDR3nt, count, V) %>% 
+    group_by(cell_type, condition) %>%
+    mutate(seq_n = sum(count)) %>%
+    ungroup %>% 
+    group_by(cell_type, condition, CDR3nt, V)  %>% 
+    dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+    ungroup %>% distinct %>% arrange(-f_CDR3) %>% ungroup
+  return(CDR3aa)
+}
+
+
+pool_CDR3_aa <- function(dat, cell.type){
+  CDR3aa <- dat %>% filter(cell_type == cell.type) %>%
+    select(cell_type, condition,CDR3aa, count) %>% 
+    group_by(cell_type, condition) %>%
+    mutate(seq_n = sum(count)) %>%
+    ungroup %>% 
+    group_by(cell_type, condition, CDR3aa)  %>% 
+    dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+    ungroup %>% distinct %>% arrange(-f_CDR3) %>% ungroup
+  return(CDR3aa)
+}

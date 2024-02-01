@@ -13,7 +13,7 @@ file_save <- function(.fname){
   filename = paste0("./plots/", .fname)
   return(filename)
 }
-samples <- read_csv("../samples.csv")
+samples <- read_csv("samples.csv")
 rownames(samples) <- samples$library
 bcr.heavy <- read_csv("bcr_heavy.csv.gz")
 bcr.heavy$condition <- factor(bcr.heavy$condition, levels = c("WT", "KO"))
@@ -35,7 +35,7 @@ CDR3aa <- bcr.heavy.v %>% filter(cell_type == "B-1a") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa, V, J)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3)
 
 
@@ -48,13 +48,13 @@ seq_clones_WT <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition
 seq_clones_KO <- sum((CDR3_props[CDR3_props$f_CDR3 > 0.01 & CDR3_props$condition == "KO",])$f_CDR3)
 CDR3_props$CDR3 <- ifelse(CDR3_props$f_CDR3 > 0.01, CDR3_props$CDR3aa, "not replicated")
 CDR3_props <- CDR3_props %>%  group_by(condition, CDR3, V, J) %>%  
-  summarize(f = sum(f_CDR3), c = sum(c_CDR3))
+  dplyr::summarize(f = sum(f_CDR3), c = sum(c_CDR3))
 
 CDR3_props$CDR3_full <- ifelse(CDR3_props$CDR3 == "not replicated", "not replicated", 
        paste0(CDR3_props$CDR3, " (", CDR3_props$V, " + ", CDR3_props$J, ")"))
 CDR3_props <- CDR3_props %>% select(condition, f, c, CDR3_full) %>% ungroup
 CDR3_props <- CDR3_props %>%  group_by(condition, CDR3_full) %>%  
-  summarize(f = sum(f), c = sum(c)) %>% ungroup 
+  dplyr::summarize(f = sum(f), c = sum(c)) %>% ungroup 
 
 
 cd1 <- CDR3_props %>% filter(condition == "WT") %>% 
@@ -65,15 +65,25 @@ cd1 <- CDR3_props %>% filter(condition == "WT") %>%
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
   ylab("") + xlab("") 
 
-ggsave(plot = cd1, filename = file_save("piechart_B1a_WT_cdr3_VJ.tiff"), dpi = 300, w = 7, h = 4.5)
+ggsave(plot = cd1, filename = file_save("piechart_B1a_WT_cdr3_VJ.pdf"), dpi = 300, w = 7, h = 4.5)
 
+colo <- c('#4363d8', '#3cb44b', '#ffe119','#e6194b', '#f58231',  '#911eb4',
+          '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000')
 cd2 <- CDR3_props %>% filter(condition == "KO") %>% ggplot(aes(x = "", y=c, fill = reorder(CDR3_full, -c))) +
   geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1a KO)")+
   coord_polar("y", start=0) +
   scale_fill_manual(values = colo) +
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
   ylab("") + xlab("") 
-ggsave(plot = cd2, filename = file_save("piechart_B1a_KO_cdr3_VJ.tiff"), dpi = 300, w = 7, h = 4.5)
+ggsave(plot = cd2, filename = file_save("piechart_B1a_KO_cdr3_VJ.pdf"), dpi = 300, w = 7, h = 4.5)
+
+
+colo <- c('#4363d8', '#f58231','#e6194b', '#3cb44b', '#ffe119',  '#911eb4',
+          '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000')
 
 #### same for B1b
 CDR3aa <- bcr.heavy.v %>% filter(cell_type == "B-1b") %>%
@@ -82,7 +92,7 @@ CDR3aa <- bcr.heavy.v %>% filter(cell_type == "B-1b") %>%
   mutate(seq_n = sum(count)) %>%
   ungroup %>% 
   group_by(cell_type, condition, CDR3aa, V, J)  %>% 
-  summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
+  dplyr::summarize(c_CDR3 = sum(count), f_CDR3 = sum(count)/seq_n ) %>%
   ungroup %>% distinct %>% arrange(-f_CDR3)
 
 
@@ -95,13 +105,13 @@ seq_clones_WT <- sum((CDR3_props[CDR3_props$f_CDR3 >= 0.01 & CDR3_props$conditio
 seq_clones_KO <- sum((CDR3_props[CDR3_props$f_CDR3 >= 0.01 & CDR3_props$condition == "KO",])$f_CDR3)
 CDR3_props$CDR3 <- ifelse(CDR3_props$f_CDR3 >= 0.01, CDR3_props$CDR3aa, "not replicated")
 CDR3_props <- CDR3_props %>%  group_by(condition, CDR3, V, J) %>%  
-  summarize(f = sum(f_CDR3), c = sum(c_CDR3))
+  dplyr::summarize(f = sum(f_CDR3), c = sum(c_CDR3))
 
 CDR3_props$CDR3_full <- ifelse(CDR3_props$CDR3 == "not replicated", "not replicated", 
                                paste0(CDR3_props$CDR3, " (", CDR3_props$V, " + ", CDR3_props$J, ")"))
 CDR3_props <- CDR3_props %>% select(condition, f, c, CDR3_full) %>% ungroup
 CDR3_props <- CDR3_props %>%  group_by(condition, CDR3_full) %>%  
-  summarize(f = sum(f), c = sum(c)) %>% ungroup 
+  dplyr::summarize(f = sum(f), c = sum(c)) %>% ungroup 
 
 
 cd1 <- CDR3_props %>% filter(condition == "WT") %>% 
@@ -112,7 +122,7 @@ cd1 <- CDR3_props %>% filter(condition == "WT") %>%
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
   ylab("") + xlab("") 
 
-ggsave(plot = cd1, filename = file_save("piechart_B1b_WT_cdr3_VJ.tiff"), dpi = 300, w = 7, h = 4.5)
+ggsave(plot = cd1, filename = file_save("piechart_B1b_WT_cdr3_VJ.pdf"), dpi = 300, w = 7, h = 4.5)
 
 cd2 <- CDR3_props %>% filter(condition == "KO") %>% ggplot(aes(x = "", y=c, fill = reorder(CDR3_full, -c))) +
   geom_bar(stat="identity", width=0.001, color="white") + labs(fill = "CDR3 AA sequence (B-1b KO)")+
@@ -120,5 +130,5 @@ cd2 <- CDR3_props %>% filter(condition == "KO") %>% ggplot(aes(x = "", y=c, fill
   scale_fill_manual(values = colo) +
   theme_classic(base_size = 14) %+replace% theme(line = element_blank(), axis.text = element_blank()) +
   ylab("") + xlab("") 
-ggsave(plot = cd2, filename = file_save("piechart_B1b_KO_cdr3_VJ.tiff"), dpi = 300, w = 7, h = 4.5)
+ggsave(plot = cd2, filename = file_save("piechart_B1b_KO_cdr3_VJ.pdf"), dpi = 300, w = 7, h = 4.5)
 

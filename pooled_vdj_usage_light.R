@@ -8,20 +8,22 @@ library(ggprism)
 source("universal.R")
 
 samples <- read_csv("samples.csv")
-bcr.heavy <- read_csv("bcr_heavy.csv.gz")
-bcr.heavy$condition <- factor(bcr.heavy$condition, levels = c("WT", "KO"))
+bcr<- read_csv("bcr.light.csv.gz")
+bcr$condition <- factor(bcr$condition, levels = c("WT", "KO"))
 
-all <- bcr.heavy
-all$V <- gsub("\\-.*", "", bcr.heavy$V)
+all <- bcr
+all$V <- gsub("\\-.*", "", all$V)
+all$V <- gsub("\\*.*", "", all$V)
+
 all$V <- gsub("S.*", "", all$V)
-all$V <- gsub("IGHV", "VH", all$V)
-all$D <- gsub("\\-.*", "", bcr.heavy$D)
-all$D <- gsub("IGHD", "DH", all$D)
-all$J <- gsub("\\*.*", "", bcr.heavy$J)
-all$J <- gsub("IGHJ", "JH", all$J)
-all$V <- factor(all$V, levels = c("VH1", "VH2", "VH3", "VH4", "VH5", "VH6", "VH7", "VH8", "VH9", "VH10", "VH11", "VH12", "VH13", "VH14", "VH15", "VH16"))
-
-
+all$V <- gsub("IGKV", "VK", all$V)
+all$V <- gsub("IGLV", "VL", all$V)
+all$J <- gsub("\\*.*", "", all$J)
+all$J <- gsub("IGLJ", "JL", all$J)
+all$J <- gsub("IGKJ", "JK", all$J)
+v_genes <- paste( "VK", seq(1:20),sep="")
+v_genes <- c(v_genes, c("VL1", "VL2", "VL3"))
+all$V <- factor(all$V, levels = v_genes)
 get_vdj_plot <- function(cell.type, chain)
 {
   genes <- all %>% filter(cell_type == cell.type, get(chain) != ".") %>%
@@ -43,27 +45,20 @@ get_vdj_plot <- function(cell.type, chain)
     scale_y_continuous(labels = scales::percent)
 }
 get_vdj_plot("B-1a", "V")
-ggsave("./plots/B-1a_V.pdf", h = 3, w = 9, dpi = 300)
-ggsave("./plots/B-1a_V.png", h = 3, w = 9, dpi = 300)
+ggsave("./plots/light_B-1a_V.pdf", h = 3, w = 9, dpi = 300)
+ggsave("./plots/light_B-1a_V.png", h = 3, w = 9, dpi = 300)
 
 get_vdj_plot("B-1a", "J")
-ggsave("./plots/B-1a_J.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/B-1a_J.pdf", h = 3, w = 3, dpi = 300)
-
-get_vdj_plot("B-1a", "D")
-ggsave("./plots/B-1a_D.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/B-1a_D.pdf", h = 3, w = 3, dpi = 300)
+ggsave("./plots/light_B-1a_J.png", h = 3, w = 4, dpi = 300)
+ggsave("./plots/light_B-1a_J.pdf", h = 3, w = 4, dpi = 300)
 
 
 get_vdj_plot("B-1b", "V")
-ggsave("./plots/B-1b_V.pdf", h = 3, w = 9, dpi = 300)
-ggsave("./plots/B-1b_V.png", h = 3, w = 9, dpi = 300)
+ggsave("./plots/light_B-1b_V.pdf", h = 3, w = 9, dpi = 300)
+ggsave("./plots/light_B-1b_V.png", h = 3, w = 9, dpi = 300)
 
 get_vdj_plot("B-1b", "J")
-ggsave("./plots/B-1b_J.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/B-1b_J.pdf", h = 3, w = 3, dpi = 300)
+ggsave("./plots/light_B-1b_J.png", h = 3, w = 4, dpi = 300)
+ggsave("./plots/light_B-1b_J.pdf", h = 3, w = 4, dpi = 300)
 
-get_vdj_plot("B-1b", "D")
-ggsave("./plots/B-1b_D.png", h = 3, w = 3, dpi = 300)
-ggsave("./plots/B-1b_D.pdf", h = 3, w = 3, dpi = 300)
 
