@@ -4,7 +4,7 @@ library(ggpubr)
 library(rstatix)
 library(tidyr)
 library(ggprism)
-
+theme_set(theme_prism(base_size = 20))
 
 safe_colorblind_palette <- c("#88CCEE",  "#DDCC77", "#CC6677","#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", 
@@ -12,7 +12,10 @@ safe_colorblind_palette <- c("#88CCEE",  "#DDCC77", "#CC6677","#117733", "#33228
                              "#BF1515")
 # files_light <- list.files('old_R/', pattern = '*light*.csv')
 # files_heavy <- list.files('old_R/', pattern = '*heavy*.csv')
-
+cls <- c( "#0000FF", "#FD8008",'#e6194b', '#3cb44b', '#ffe119',  '#911eb4',
+          '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff',
+          '#9a6324', '#fffac8', '#800000', '#aaffc3',
+          '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000')
 CompareGroups <- function(dat,col,metric, titile){
   
   p.value <- wilcox.test(get(col) ~ condition, dat)$p.value
@@ -20,23 +23,25 @@ CompareGroups <- function(dat,col,metric, titile){
   par(oma=c(2,2,2,2))
   y_pos <- max(dat[,col])*1.2
   gp <- ggplot(dat, aes_string(x = factor(dat$condition), y = col, fill = 'condition'))+
-    geom_boxplot(lwd=0.3,size=0.3,outlier.size=-1,outlier.shape = NA, width=0.3,alpha=0.7,position = position_dodge2(preserve = "single"))+
-    geom_jitter(shape=16, position=position_dodge(0.5), size = 1) +
+    geom_boxplot(lwd=.75,size=1,outlier.size=-1,outlier.shape = NA, 
+                 width=0.7,alpha=0.7,position = position_dodge2(preserve = "single"))+
+    geom_jitter(shape=16, position=position_dodge(1), size = 2, alpha = .5) +
     ylab(metric)+ 
     xlab("") + 
     scale_fill_manual(values= cls) +
     ggtitle(paste(titile))+
     scale_y_continuous(expand = expansion(mult = 0.2)) +
-    theme_prism(base_size =  10) %+replace% theme(plot.title = element_text(size = 10, vjust = 2)) +  guides(fill=FALSE)
+    theme(plot.title = element_text(size = 20, vjust = 2)) +  
+    guides(fill=FALSE)
   
   if(p.value <0.05)
     gp<- gp+ geom_signif(comparisons = list(c("WT", "KO")), 
-                         map_signif_level=TRUE)
+                         map_signif_level=TRUE, size = .8, textsize =10)
   return(gp)
 }
 
 file_save <- function(.fname){
-  filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", .fname)
+  filename = paste0("./plots/", .fname)
   return(filename)
 }
 samples <- read_csv("samples.csv")
@@ -83,180 +88,6 @@ bcr.heavy$condition <- factor(bcr.heavy$condition, levels = c("WT", "KO"))
 bcr.heavy <- bcr.heavy %>% mutate(cell_type = recode_factor(cell_type, "B1a" = "B-1a","B1b"= "B-1b"))
 #write_csv(bcr.heavy, "../bcr_heavy.csv")
 
-
-############################# V #############################
-#############################################################
-
-v <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, V) %>%
-  dplyr::summarize(freq = sum(frequency)) %>%
-  ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
-tmp1 <- v %>% complete(nesting(smp, condition, cell_type), V) %>% replace(is.na(.), 0)
-B1a_p_val <- tmp1 %>% filter(cell_type == "B1a") %>% 
-  dplyr::group_by(V) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(V, Wilcox = w$p.value)
-
-sigs <- B1a_p_val %>% filter(Wilcox < 0.05) %>% pull(V)
-v_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, V) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  unique %>% slice(1:15) %>%  pull(V)
-B1a_V <- tmp1 %>% filter(cell_type == "B1a", V %in% v_in_B1a) %>% ggplot(aes(x = fct_reorder(V, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("V genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none") +
-  scale_y_continuous(labels = scales::percent)
-B1a_V
-ggsave(plot = B1a_V, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1a_v_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
-
-B1b_p_val <- tmp1 %>% filter(cell_type == "B1b") %>% 
-  dplyr::group_by(V) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(V, Wilcox = w$p.value)
-
-
-sigs <- B1b_p_val %>% filter(Wilcox < 0.05) %>% pull(V)
-v_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, V) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  arrange(desc(avg_freq)) %>% select(V) %>%
-  unique %>% slice(1:15) %>%  pull(V)
-B1b_V <- tmp1 %>% filter(cell_type == "B1b", V %in% v_in_B1b) %>% ggplot(aes(x = fct_reorder(V, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("V genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none")+
-  scale_y_continuous(labels = scales::percent)
-B1b_V
-ggsave(plot = B1b_V, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1b_v_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
-############################# D #############################
-#############################################################
-
-
-D <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  dplyr::summarize(freq = sum(frequency)) %>%
-  ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
-tmp1 <- D %>% complete(nesting(smp, condition, cell_type), D) %>% replace(is.na(.), 0)
-
-B1a_p_val_d <- tmp1 %>% filter(cell_type == "B1a") %>% 
-  dplyr::group_by(D) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(D, Wilcox = w$p.value)
-
-
-sigs <- B1a_p_val_d %>% filter(Wilcox < 0.05) %>% pull(D)
-d_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, D) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  arrange(desc(avg_freq)) %>% select(D) %>%
-  unique %>% slice(1:15) %>%  pull(D)
-B1a_D <- tmp1 %>% filter(cell_type == "B1a", D %in% d_in_B1a) %>% ggplot(aes(x = fct_reorder(D, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("D genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none")+
-  scale_y_continuous(labels = scales::percent)
-B1a_D
-ggsave(plot = B1a_D, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1a_d_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
-D <- bcr.heavy %>% filter(V != ".") %>% dplyr::group_by(sample, condition, cell_type, D) %>%
-  dplyr::summarize(freq = sum(frequency)) %>%
-  ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
-tmp1 <- D %>% complete(nesting(smp, condition, cell_type), D) %>% replace(is.na(.), 0)
-
-B1b_p_val_d <- tmp1 %>% filter(cell_type == "B1b") %>% 
-  dplyr::group_by(D) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(D, Wilcox = w$p.value)
-sigs <- B1b_p_val_d %>% filter(Wilcox < 0.05) %>% pull(D)
-d_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, D) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  arrange(desc(avg_freq)) %>% select(D) %>%
-  unique %>% slice(1:15) %>%  pull(D)
-B1b_D <- tmp1 %>% filter(cell_type == "B1b", D %in% d_in_B1b) %>% ggplot(aes(x = fct_reorder(D, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("D genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none")+
-  scale_y_continuous(labels = scales::percent)
-B1b_D
-ggsave(plot = B1b_D, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1b_d_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
-########### ############## ############## ############## ############## ############## ############## ############## ############## 
-############## ############## J ############## ############## ############## ############## ############## ############## ############## 
-############## ############## ############## ############## ############## ############## ############## ############## ############## 
-
-
-J <- bcr.heavy %>% filter(J != ".") %>% dplyr::group_by(sample, condition, cell_type, J) %>%
-  dplyr::summarize(freq = sum(frequency)) %>%
-  ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
-tmp1 <- J %>% complete(nesting(smp, condition, cell_type), J) %>% replace(is.na(.), 0)
-B1a_p_val_J <- tmp1 %>% filter(cell_type == "B1a") %>% 
-  dplyr::group_by(J) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(J, Wilcox = w$p.value)
-sigs <- B1a_p_val_J %>% filter(Wilcox < 0.05) %>% pull(J)
-J_in_B1a <- tmp1 %>% filter(cell_type == "B1a") %>% group_by(condition, J) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  arrange(desc(avg_freq)) %>% select(J) %>%
-  unique %>% slice(1:15) %>%  pull(J)
-B1a_J <- tmp1 %>% filter(cell_type == "B1a", J %in% J_in_B1a) %>% ggplot(aes(x = fct_reorder(J, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("J genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none")+
-  scale_y_continuous(labels = scales::percent)
-B1a_J
-ggsave(plot = B1a_J, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1a_J_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
-B1b_p_val_J <- tmp1 %>% filter(cell_type == "B1b") %>% 
-  dplyr::group_by(J) %>% 
-  do(w = wilcox.test(freq ~ condition, data = ., exact = F, paired = F)) %>%      
-  summarise(J, Wilcox = w$p.value)
-sigs <- B1b_p_val_J %>% filter(Wilcox < 0.05) %>% pull(J)
-J_in_B1b <- tmp1 %>% filter(cell_type == "B1b") %>% group_by(condition, J) %>% 
-  dplyr::summarize(avg_freq = mean(freq)) %>% ungroup %>% 
-  arrange(desc(avg_freq)) %>% select(J) %>%
-  unique %>% slice(1:15) %>%  pull(J)
-B1b_J <- tmp1 %>% filter(cell_type == "B1b", J %in% J_in_B1b) %>% ggplot(aes(x = fct_reorder(J, desc(freq)), y = freq, fill = condition )) +
-  geom_boxplot(outlier.shape = NA) + geom_jitter(aes(color = condition, alpha = 0.5, shape = condition)) +
-  scale_fill_manual(values = cls) +
-  scale_color_manual(values = cls) +
-  theme_prism(base_size = 10) %+replace% theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=1)) +
-  ylab("% of all sequences") + xlab("")  +
-  ggtitle("J genes") +
-  stat_compare_means(label = "p.signif", hide.ns = T, fontface = "bold", size = 6, vjust = 1) + 
-  guides(alpha = "none")+
-  scale_y_continuous(labels = scales::percent)
-B1b_J
-ggsave(plot = B1b_J, filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/", "B1b_J_trust4.tiff"),
-       height = 3.3, width = 6.6, unit = "in", dpi =300)
-
 ############## ############## ############## ############## ############## ############## ############## ############## ############## 
 ############## ############## ############## ##############  ISOTYPES AND UNIQUE CDR3 ############## ############## ############## 
 ############## ############## ############## ############## ############## ############## ############## ############## ############## 
@@ -270,11 +101,10 @@ st.Ig <- bcr.heavy%>%
 
 barplot_igs <- ggplot(st.Ig,aes(x = condition, y = Num.Ig, fill = Class))+
   geom_bar(stat = "identity",position="fill",alpha = 0.8)+
-  theme_bw()+
   labs(y = "Normalized Ig Abundance",fill = "Ig") + facet_wrap(~cell_type) +
-  scale_fill_manual(values = c("#6db32c", "#cc322a", "#FD8008", "#0000FF", "#6db32c", "#cc322a")) +
-  theme_prism()
-
+  scale_fill_manual(values = c("#6db32c", "#cc322a", "#FD8008", "#0000FF", "#6db32c", "#cc322a")) + 
+  theme(strip.text.x = element_text(size = 20))
+barplot_igs
 ggsave(plot = barplot_igs, filename = file_save("barplot_igs.tiff"), h = 6.5, w = 6.2) 
 all_Bs <- st.Ig %>% mutate(Class = factor(Class, levels = c("IGHM", "IGHD"))) %>% dplyr::filter(Class != ".", cell_type != "B2") %>%
   ggplot(aes(x = condition, y = Num.Ig, fill = condition))+ 
@@ -286,29 +116,35 @@ all_Bs <- st.Ig %>% mutate(Class = factor(Class, levels = c("IGHM", "IGHD"))) %>
   scale_y_continuous(expand = expansion(mult = 0.3)) +
   stat_compare_means(method = "wilcox.test", hide.ns = T, vjust = -.7, label.x.npc  = 0.5, label = "p.signif", size = 5, fontface = "bold") + geom_jitter(alpha = 0.5) 
 
-igd <- st.Ig %>% mutate(cell_type = recode_factor(cell_type, "B1a" = "B-1a","B1b"= "B-1b")) %>% 
+igd <- st.Ig%>% mutate(cell_type = recode_factor(cell_type, "B1a" = "B-1a","B1b"= "B-1b")) %>% 
   dplyr::filter(Class == "IGHD", cell_type != "B2") %>%
   ggplot(aes(x = condition, y = Num.Ig, fill = condition))+ 
   geom_boxplot(outlier.shape = NA)+
-  theme_bw()+
   labs(y = "Normalized Ig Abundance",fill = "Ig")+
-  scale_fill_manual(values =  cls)+
-  theme_prism(base_size = 10) +facet_wrap(~cell_type) +
+  scale_fill_manual(values =  cls) +facet_wrap(~cell_type) +
   scale_y_continuous(expand = expansion(mult = 0.3)) + ggtitle("IgD") +
-  stat_compare_means(method = "wilcox.test", hide.ns = T, vjust = -.7, label.x.npc  = 0.5, label = "p.signif", size = 5, fontface = "bold") + geom_jitter(alpha = 0.5) 
+  stat_compare_means(method = "wilcox.test", hide.ns = T, vjust = -.7,
+                     label.x.npc  = 0.5, label = "p.signif", size = 10, fontface = "bold") +
+  geom_jitter(alpha = 0.5) + 
+  theme(strip.text.x = element_text(size = 20))
+
 igm <- st.Ig%>% mutate(cell_type = recode_factor(cell_type, "B1a" = "B-1a","B1b"= "B-1b")) %>% dplyr::filter(Class == "IGHM", cell_type != "B2") %>%
   ggplot(aes(x = condition, y = Num.Ig, fill = condition))+ 
   geom_boxplot(outlier.shape = NA)+
-  theme_bw()+
   labs(y = "Normalized Ig Abundance",fill = "Ig")+
-  scale_fill_manual(values =  cls)+
-  theme_prism(base_size = 10) +facet_wrap(~cell_type) +
+  scale_fill_manual(values =  cls) +facet_wrap(~cell_type) +
   scale_y_continuous(expand = expansion(mult = 0.3)) + ggtitle("IgM") +
-  stat_compare_means(method = "wilcox.test", hide.ns = T, vjust = -.7, label.x.npc  = 0.5, label = "p.signif", size = 5, fontface = "bold") + geom_jitter(alpha = 0.5) 
-plot <- ggarrange(igm, igd, nrow = 2, common.legend = TRUE, legend = "right")+bgcolor("white") +border("white")
-ggsave( plot = plot,
-        filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/","all_igs_trust4.tiff"), 
-        height = 5, width = 4.12, units = "in", dpi = 300)
+  stat_compare_means(method = "wilcox.test", hide.ns = T, vjust = -.7,
+                     label.x.npc  = 0.5, label = "p.signif", size = 10, fontface = "bold") +
+  geom_jitter(alpha = 0.5) + 
+  theme(strip.text.x = element_text(size = 20))
+
+igm
+#plot <- ggarrange(igm, igd, nrow = 2, common.legend = TRUE, legend = "right")+bgcolor("white") +border("white")
+ggsave( plot = igm,
+        filename = paste0("./plots/",
+                          "igm.tiff"), 
+        height = 5.5, width = 5.5, units = "in", dpi = 300)
 
 all_Bs
 ggsave( plot = all_Bs,
@@ -329,13 +165,15 @@ ggsave( plot = all_Bs2,
         filename = paste0("/project/mcnamara-lab/Maria/dennis_rnaseq/bcr_take2_trust4/figures/","all_igs_trust4.3.tiff"), 
         height = 4.6, width = 4.12, units = "in", dpi = 300)
 
-B1a.bcr.heavy <- bcr.heavy %>% filter(cell_type == "B1a")
+B1a.bcr.heavy <- bcr.heavy %>% filter(cell_type == "B-1a")
 dat <- aggregate(CDR3aa ~ sample + condition, B1a.bcr.heavy, function(x) length(unique(x))) 
-B1a_gc <- CompareGroups(dat,"CDR3aa","Number of Unique CDR3", "B1a")
+B1a_gc <- CompareGroups(dat,"CDR3aa","Number of Unique CDR3", "B-1a")
+B1a_gc
 
-B1b.bcr.heavy <- bcr.heavy %>% filter(cell_type == "B1b")
+
+B1b.bcr.heavy <- bcr.heavy %>% filter(cell_type == "B-1b")
 dat <- aggregate(CDR3aa ~ sample + condition, B1b.bcr.heavy, function(x) length(unique(x))) 
-B1b_gc <- CompareGroups(dat,"CDR3aa","Number of Unique CDR3", "B1b")
+B1b_gc <- CompareGroups(dat,"CDR3aa","Number of Unique CDR3", "B-1b")
 B1b_gc <- B1b_gc + ylab("")
 
 B2.bcr.heavy <- bcr.heavy %>% filter(cell_type == "B2")
@@ -345,7 +183,7 @@ B2_gc <- CompareGroups(dat,"CDR3aa","Number of Unique CDR3", "B2")
 
 pl <- ggarrange(B1a_gc, B1b_gc,  nrow = 1, common.legend = TRUE, legend = "bottom")
 pl
-ggsave(plot = pl, file = file_save("unique_CDR3.jpg"),h = 1.8, w = 3.8, dpi = 300)
+ggsave(plot = pl, file = file_save("unique_CDR3.jpg"),h = 4.3, w =5.7, dpi = 300)
 .V <- bcr.heavy %>% dplyr::group_by(sample, condition, cell_type, V) %>%
   dplyr::summarize(freq = sum(frequency)) %>%
   ungroup %>%  mutate(smp = sample) %>% select(-sample) %>% distinct
